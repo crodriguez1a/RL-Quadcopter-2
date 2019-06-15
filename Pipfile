@@ -9,6 +9,8 @@ verify_ssl = true
 matplotlib = "*"
 numpy = "*"
 pandas = "*"
+jupyter = "*"
+keras = "*"
 
 [requires]
 python_version = "3.7"
