@@ -28,10 +28,42 @@ class Task():
         # Goal
         self.target_pos = target_pos if target_pos is not None else np.array([0., 0., 10.])
 
-    def get_reward(self):
+    def get_reward(self) -> float:
         """Uses current pose of sim to return reward."""
-        reward = 1.-.3*(abs(self.sim.pose[:3] - self.target_pos)).sum()
-        return reward
+
+        # average difference
+        # reward:float = 1.-.3*(abs(self.sim.pose[:3] - self.target_pos)).sum()
+
+        # TODO see torcs environment
+
+        new_reward:float = 0.
+
+        current_dims = self.sim.pose[:3]
+        cx, cy, cz = tuple(current_dims)
+
+        target_dims = self.target_pos
+        tx, ty, tz = tuple(target_dims)
+
+        z_reward:float = 0.
+        x_reward:float = 0.
+        y_reward:float = 0.
+        dims_w: tuple = (0., 0., 0.)
+
+        # prioritize z dimension first
+        if (abs(cz - tz) / 100) in np.arange(0, 0.05, 0.01): # until we're within striking distance of z...
+            dims_w = (2, .5, .5)
+        else:
+            dims_w = (.9, 1.05, 1.05)
+
+        z_w, x_w, y_w = (dims_w)
+        z_reward = z_w * abs(cz - tz)
+        x_reward = x_w * abs(cx - tx)
+        y_reward = y_w * abs(cy - ty)
+
+        new_reward = 1. - .3 * (z_reward + x_reward + y_reward)
+
+        # return reward
+        return new_reward
 
     def step(self, rotor_speeds):
         """Uses action to obtain next state, reward, done."""

@@ -1,3 +1,6 @@
+from keras import layers, models, optimizers
+from keras import backend as K
+
 class Critic:
     """Critic (Value) Model."""
 
@@ -23,31 +26,50 @@ class Critic:
         actions = layers.Input(shape=(self.action_size,), name='actions')
 
         # Add hidden layer(s) for state pathway
-        net_states = layers.Dense(units=32, activation='relu')(states)
-        net_states = layers.Dense(units=64, activation='relu')(net_states)
+        net_states = layers.Dense(units=32, use_bias=False)(states)
+        net_states = layers.BatchNormalization()(net_states)
+        net_states = layers.Activation("elu")(net_states)
+
+        net_states = layers.Dense(units=64, use_bias=False)(net_states)
+        net_states = layers.BatchNormalization()(net_states)
+        net_states = layers.Activation("elu")(net_states)
 
         # Add hidden layer(s) for action pathway
-        net_actions = layers.Dense(units=32, activation='relu')(actions)
-        net_actions = layers.Dense(units=64, activation='relu')(net_actions)
+        net_actions = layers.Dense(units=32, use_bias=False)(actions)
+        net_actions = layers.BatchNormalization()(net_actions)
+        net_actions = layers.Activation("elu")(net_actions)
+
+        net_actions = layers.Dense(units=64, use_bias=False)(net_actions)
+        net_actions = layers.BatchNormalization()(net_actions)
+        net_actions = layers.Activation("elu")(net_actions)
 
         # Try different layer sizes, activations, add batch normalization, regularizers, etc.
         # TODO:
 
         # Combine state and action pathways
         net = layers.Add()([net_states, net_actions])
-        net = layers.Activation('relu')(net)
+        net = layers.BatchNormalization()(net)
+        net = layers.Activation('elu')(net)
 
         # Add more layers to the combined network if needed
-        # TODO:
-        
+        net = layers.Dense(units=32, use_bias=False)(net)
+        net = layers.BatchNormalization()(net)
+        net = layers.Activation('elu')(net)
+
+        net = layers.Dense(units=64, use_bias=False)(net)
+        net = layers.BatchNormalization()(net)
+        net = layers.Activation('elu')(net)
+
         # Add final output layer to prduce action values (Q values)
-        Q_values = layers.Dense(units=1, name='q_values')(net)
+        Q_values = layers.Dense(units=1, name='q_values', use_bias=False)(net)
+        net = layers.BatchNormalization()(net)
+        net = layers.Activation('tanh')(net)
 
         # Create Keras model
         self.model = models.Model(inputs=[states, actions], outputs=Q_values)
 
         # Define optimizer and compile model for training with built-in loss function
-        optimizer = optimizers.Adam()
+        optimizer = optimizers.Adam(lr=0.001) # 10 exp -3
         self.model.compile(optimizer=optimizer, loss='mse')
 
         # Compute action gradients (derivative of Q values w.r.t. to actions)

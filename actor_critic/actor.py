@@ -30,16 +30,28 @@ class Actor:
         states = layers.Input(shape=(self.state_size,), name='states')
 
         # Add hidden layers
-        net = layers.Dense(units=32, activation='relu')(states)
-        net = layers.Dense(units=64, activation='relu')(net)
-        net = layers.Dense(units=32, activation='relu')(net)
+        net = layers.Dense(units=32, use_bias=False)(states)
+        net = layers.BatchNormalization()(net)
+        net = layers.Activation("elu")(net)
+
+        net = layers.Dense(units=64, use_bias=False)(net)
+        net = layers.BatchNormalization()(net)
+        net = layers.Activation("elu")(net)
+
+        net = layers.Dense(units=32, use_bias=False)(net)
+        net = layers.BatchNormalization()(net)
+        net = layers.Activation("elu")(net)
+
 
         # Try different layer sizes, activations, add batch normalization, regularizers, etc.
         # TODO:
 
+
+
         # Add final output layer with sigmoid activation
-        raw_actions = layers.Dense(units=self.action_size, activation='sigmoid',
-                name='raw_actions')(net)
+        raw_actions = layers.Dense(units=self.action_size,
+                                   activation='sigmoid',
+                                   name='raw_actions')(net)
 
         # Scale [0, 1] output for each action dimension to proper range
         actions = layers.Lambda(lambda x: (x * self.action_range) + self.action_low,
@@ -56,7 +68,7 @@ class Actor:
         # TODO:
 
         # Define optimizer and training function
-        optimizer = optimizers.Adam()
+        optimizer = optimizers.Adam(lr=0.0001) # 10 exp -4
         updates_op = optimizer.get_updates(params=self.model.trainable_weights, loss=loss)
         self.train_fn = K.function(inputs=[self.model.input, action_gradients, K.learning_phase()],
                                    outputs=[],

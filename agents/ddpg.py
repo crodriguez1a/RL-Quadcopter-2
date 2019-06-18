@@ -1,7 +1,8 @@
+import numpy as np
 from actor_critic import Actor, Critic, OUNoise
 from util.replay_buffer import ReplayBuffer
 
-class DDPG():
+class DDPG_Agent():
     """Reinforcement Learning agent that learns using DDPG."""
     def __init__(self, task):
         self.task = task
@@ -23,9 +24,9 @@ class DDPG():
         self.actor_target.model.set_weights(self.actor_local.model.get_weights())
 
         # Noise process
-        self.exploration_mu = 0
-        self.exploration_theta = 0.15
-        self.exploration_sigma = 0.2
+        self.exploration_mu = 0 # mean, drift?
+        self.exploration_theta = 100 # 0.15 # long-term mean?
+        self.exploration_sigma = 500 # 0.2 # volatility?
         self.noise = OUNoise(self.action_size, self.exploration_mu, self.exploration_theta, self.exploration_sigma)
 
         # Replay memory
@@ -35,7 +36,7 @@ class DDPG():
 
         # Algorithm parameters
         self.gamma = 0.99  # discount factor
-        self.tau = 0.01  # for soft update of target parameters
+        self.tau = 0.001  # rate at which we soft update of target parameters
 
     def reset_episode(self):
         self.noise.reset()

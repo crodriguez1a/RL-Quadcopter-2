@@ -2,7 +2,13 @@ import numpy as np
 import copy
 
 class OUNoise:
-    """Ornstein-Uhlenbeck process."""
+    """
+    Ornstein-Uhlenbeck process.
+
+    add some noise to our actions, in order to encourage exploratory behavior.
+    And since our actions translate to force and torque being applied to a
+    quadcopter, we want consecutive actions to not vary wildly.
+    """
 
     def __init__(self, size, mu, theta, sigma):
         """Initialize parameters and noise process."""

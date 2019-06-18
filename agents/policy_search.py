@@ -22,14 +22,15 @@ class PolicySearch_Agent():
 
         # Episode variables
         self.reset_episode()
-
+    
     def reset_episode(self):
         self.total_reward = 0.0
         self.count = 0
         state = self.task.reset()
         return state
 
-    def step(self, reward, done):
+    def step(self, action, reward, next_state, done):
+
         # Save experience / reward
         self.total_reward += reward
         self.count += 1
@@ -54,4 +55,3 @@ class PolicySearch_Agent():
             self.w = self.best_w
             self.noise_scale = min(2.0 * self.noise_scale, 3.2)
         self.w = self.w + self.noise_scale * np.random.normal(size=self.w.shape)  # equal noise in all directions
-        
