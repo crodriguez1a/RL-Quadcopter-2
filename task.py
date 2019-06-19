@@ -1,6 +1,9 @@
 import numpy as np
 from physics_sim import PhysicsSim
 
+def scaled(arr:np.ndarray) -> np.ndarray:
+    return np.interp(arr, (-1, 1), (-1, +1))
+
 # takeoff, hover in place, land softly, or reach a target pose.
 
 class Task():
@@ -31,12 +34,9 @@ class Task():
     def get_reward(self) -> float:
         """Uses current pose of sim to return reward."""
 
-        # average difference
-        # reward:float = 1.-.3*(abs(self.sim.pose[:3] - self.target_pos)).sum()
+        # TODO try squared distance
 
-        # TODO see torcs environment
-
-        new_reward:float = 0.
+        weighted_reward:float = 0.
 
         current_dims = self.sim.pose[:3]
         cx, cy, cz = tuple(current_dims)
@@ -50,7 +50,8 @@ class Task():
         dims_w: tuple = (0., 0., 0.)
 
         # prioritize z dimension first
-        if (abs(cz - tz) / 100) in np.arange(0, 0.05, 0.01): # until we're within striking distance of z...
+        z_diff = (abs(cz - tz) / 100)
+        if z_diff < 0.05 : # until we're within striking distance of z...
             dims_w = (2, .5, .5)
         else:
             dims_w = (.9, 1.05, 1.05)
@@ -60,10 +61,26 @@ class Task():
         x_reward = x_w * abs(cx - tx)
         y_reward = y_w * abs(cy - ty)
 
-        new_reward = 1. - .3 * (z_reward + x_reward + y_reward)
+        weighted_reward = 1. - .3 * (z_reward + x_reward + y_reward)
+        euclidean_reward = 1 - .3 * (np.linalg.norm(current_dims - target_dims))
+        # average difference
+        original_reward:float = 1.-.3*(abs(self.sim.pose[:3] - self.target_pos)).sum()
 
-        # return reward
-        return new_reward
+
+        # Bonus rewards
+        x_diff = (abs(cx - tx) / 100)
+        y_diff = (abs(cy - ty) / 100)
+
+        if z_diff < 0.5 or x_diff < 0.5 or y_diff < 0.5:
+            euclidean_reward += 5
+
+        if z_diff > 0.5 or x_diff > 0.5 or y_diff > 0.5:
+            euclidean_reward -= 5
+
+        # return original_reward
+        # return weighted_reward
+        # return weighted_reward # scaled(weighted_reward)
+        return euclidean_reward
 
     def step(self, rotor_speeds):
         """Uses action to obtain next state, reward, done."""

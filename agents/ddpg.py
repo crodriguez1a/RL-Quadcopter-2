@@ -24,9 +24,9 @@ class DDPG_Agent():
         self.actor_target.model.set_weights(self.actor_local.model.get_weights())
 
         # Noise process
-        self.exploration_mu = 0 # mean, drift?
-        self.exploration_theta = 100 # 0.15 # long-term mean?
-        self.exploration_sigma = 500 # 0.2 # volatility?
+        self.exploration_mu = 0 # drift
+        self.exploration_theta = 0.01 # 0.15 # "speed" of mean
+        self.exploration_sigma = 1 # 0.2 # volatility
         self.noise = OUNoise(self.action_size, self.exploration_mu, self.exploration_theta, self.exploration_sigma)
 
         # Replay memory

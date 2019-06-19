@@ -49,10 +49,10 @@ if __name__ == '__main__':
     num_episodes = 500
 
     setup = {
-        "init_pose": np.array([1., 1., 1., 0., 0., 0.]),
+        "init_pose": np.array([0., 0., 10., 0., 0., 0.]),
         "init_velocities": np.array([0., 0., 0.]),
         "init_angle_velocities": np.array([0., 0., 0.]),
-        "target_pos": np.array([5., 5., 10.]), # 0,0,10 was default
+        "target_pos": np.array([5., 5., 20.]), # 0,0,10 was default
         "runtime": 5.
     }
 
