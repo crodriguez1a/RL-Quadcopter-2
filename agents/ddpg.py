@@ -25,7 +25,7 @@ class DDPG_Agent():
 
         # Noise process
         self.exploration_mu = 0 # drift
-        self.exploration_theta = 0.01 # 0.15 # "speed" of mean
+        self.exploration_theta = 0.2 # 0.15 # "speed" of mean
         self.exploration_sigma = 1 # 0.2 # volatility
         self.noise = OUNoise(self.action_size, self.exploration_mu, self.exploration_theta, self.exploration_sigma)
 

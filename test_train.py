@@ -1,34 +1,41 @@
 import math
 import time
 import sys
+from collections import deque
 
 import numpy as np
 
 from agents import DDPG_Agent, PolicySearch_Agent
 from task import Task
 
-def train(agent:object, task:Task, num_episodes:int):
+def train(agent:object, task:Task, num_episodes:int) -> tuple:
     """
     Train agent
     """
-    # initialize time
-    start_time:float = time.time()
+
+    # initialize total rewards
+    total_rewards:deque = deque(maxlen=100000)
 
     for i_episode in range(1, num_episodes+1):
         # start a new episode
         state:np.ndarray = agent.reset_episode()
+
+        #initialize episode rewards
+        episode_rewards:float = 0.
 
         while True:
             action:np.ndarray = agent.act(state)
             next_state, reward, done = task.step(action)
             agent.step(action, reward, next_state, done)
             state = next_state
+            episode_rewards += reward
 
             if done:
 
                 if hasattr(agent, 'memory'):
-                    mem:list = [i.reward for i in agent.memory.memory][-100:]
-                    print("\r Episode {}/{} | Average rewards {}".format(i_episode, num_episodes, np.mean(mem)), end="")
+                    memory_rewards:list = [i.reward for i in agent.memory.memory]
+                    total_rewards.append(episode_rewards)
+                    print("\r Episode {}/{} | Average rewards {}".format(i_episode, num_episodes, np.mean(memory_rewards[:100])), end="")
 
                 elif hasattr(agent, 'score'):
                     print("\rEpisode = {:4d}, score = {:7.3f} (best = {:7.3f}), noise_scale = {}".format(
@@ -43,6 +50,8 @@ def train(agent:object, task:Task, num_episodes:int):
     target_pos:np.ndarray = task.target_pos
     print("\n", agent.__class__.__name__, fin_pos, target_pos)
     sys.stdout.flush()
+
+    return (total_rewards, fin_pos)
 
 if __name__ == '__main__':
 
@@ -60,5 +69,5 @@ if __name__ == '__main__':
     ddpg_agent:DDPG_Agent = DDPG_Agent(my_task)
     ps_agent:PolicySearch_Agent = PolicySearch_Agent(my_task)
 
-    train(ddpg_agent, my_task, num_episodes)
+    total_rewards:deque = train(ddpg_agent, my_task, num_episodes)
     # train(ps_agent, my_task, num_episodes)

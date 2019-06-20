@@ -65,8 +65,7 @@ class Task():
         euclidean_reward = 1 - .3 * (np.linalg.norm(current_dims - target_dims))
         # average difference
         original_reward:float = 1.-.3*(abs(self.sim.pose[:3] - self.target_pos)).sum()
-
-
+        
         # Bonus rewards
         x_diff = (abs(cx - tx) / 100)
         y_diff = (abs(cy - ty) / 100)
